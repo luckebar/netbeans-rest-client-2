@@ -1,4 +1,4 @@
-# netbeans-rest-client
+# netbeans-rest-client-2
 A REST client for NetBeans
 
 Features
