@@ -54,12 +54,12 @@ import org.openide.util.Utilities;
 })
 public class NewRestclientFileAction extends AbstractAction {
 
-    private static final String BASE_NAME = "NuovoRestClient";
+    private static final String BASE_NAME = "NewRestClient";
     private static final String EXT = "rstcli";
     
 
     public NewRestclientFileAction() {
-        super("Nuovo REST Client File");
+        super("New REST Client File");
     }
 
     @Override
@@ -69,7 +69,7 @@ public class NewRestclientFileAction extends AbstractAction {
 
         if (dir == null || !dir.isFolder()) {
             NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                "Seleziona una cartella valida per creare il file.",
+                "Please select a valid folder to create the file.",
                 NotifyDescriptor.WARNING_MESSAGE);
             DialogDisplayer.getDefault().notify(msg);
             return;
