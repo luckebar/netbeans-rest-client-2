@@ -25,6 +25,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentListener;
 
@@ -36,7 +37,9 @@ import javax.swing.event.DocumentListener;
 public class AuthPanel extends javax.swing.JPanel {
 
     private RestClient client;
-    
+    private RestClientTopComponent topComponent;
+    private JButton saveEnvButton;
+
     /**
      * Creates new form AuthPanel
      */
@@ -44,10 +47,23 @@ public class AuthPanel extends javax.swing.JPanel {
         initComponents();
         enableDisableGetNewAccessTokenButton();
         callbackUrlTextField.setText(RestClient.DEFAULT_CALLBACK_URL);
+        // allow importing properties from file
+        authComboBox.addItem("Import File Properties");
+        saveEnvButton = new JButton("Save Options");
+        saveEnvButton.addActionListener(e -> {
+            if (topComponent != null) {
+                topComponent.saveEnvironment();
+            }
+        });
+        add(saveEnvButton);
     }
     
     public void setRestClient(RestClient client) {
         this.client = client;
+    }
+
+    public void setTopComponent(RestClientTopComponent tc) {
+        this.topComponent = tc;
     }
     
     public String getAuthType() {
@@ -84,6 +100,10 @@ public class AuthPanel extends javax.swing.JPanel {
     
     public void setToken(String token) {
         tokenTextField.setText(token);
+    }
+
+    public String getToken() {
+        return tokenTextField.getText();
     }
     
     public String getAuthUrl() {
@@ -508,8 +528,15 @@ public class AuthPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void authComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_authComboBoxActionPerformed
-        CardLayout cardLayout = (CardLayout) authTypePanel.getLayout();
-        cardLayout.show(authTypePanel, authComboBox.getSelectedItem().toString());
+        String selected = authComboBox.getSelectedItem().toString();
+        if ("Import File Properties".equals(selected)) {
+            if (topComponent != null) {
+                topComponent.loadEnvironment();
+            }
+        } else {
+            CardLayout cardLayout = (CardLayout) authTypePanel.getLayout();
+            cardLayout.show(authTypePanel, selected);
+        }
     }//GEN-LAST:event_authComboBoxActionPerformed
 
     private void getNewAccessTokenButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getNewAccessTokenButtonActionPerformed

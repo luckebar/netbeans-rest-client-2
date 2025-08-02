@@ -25,6 +25,7 @@ import com.lb.netbeans.rest.client.event.TableParamsListener;
 import com.lb.netbeans.rest.client.event.TokenDocumentListener;
 import com.lb.netbeans.rest.client.event.UrlDocumentListener;
 import com.lb.netbeans.rest.client.UserAgent;
+import com.lb.netbeans.rest.client.persistence.EnvironmentOptions;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.core.MultivaluedHashMap;
@@ -39,6 +40,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,6 +52,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -137,6 +141,8 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
     private boolean modified = false;
     // Aggiungere questa variabile d'istanza
     private SaveCookie saveCookie;
+    private java.io.File envFile;
+    private String envName;
 
     public RestClientTopComponent(FileObject currentFile) {
         this();
@@ -236,6 +242,7 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
 
         client = new RestClient();
         authPanel.setRestClient(client);
+        authPanel.setTopComponent(this);
         processor = new RequestProcessor(RestClientTopComponent.class);
     }
 
@@ -459,6 +466,49 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
                 Exceptions.printStackTrace(ex);
             }
         }
+    }
+
+    public void saveEnvironment() {
+        if (envFile == null) {
+            JFileChooser fc = new JFileChooser();
+            if (fc.showSaveDialog(WindowManager.getDefault().getMainWindow()) == JFileChooser.APPROVE_OPTION) {
+                envFile = fc.getSelectedFile();
+                envName = JOptionPane.showInputDialog(WindowManager.getDefault().getMainWindow(), "Environment name");
+            }
+        }
+        if (envFile != null && envName != null && !envName.isEmpty()) {
+            try {
+                EnvironmentOptions.save(envFile, envName, authPanel, urlPanel);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    public void loadEnvironment() {
+        JFileChooser fc = new JFileChooser();
+        if (fc.showOpenDialog(WindowManager.getDefault().getMainWindow()) == JFileChooser.APPROVE_OPTION) {
+            envFile = fc.getSelectedFile();
+            try {
+                List<String> envs = EnvironmentOptions.getEnvironmentNames(envFile);
+                if (!envs.isEmpty()) {
+                    Object selected = JOptionPane.showInputDialog(WindowManager.getDefault().getMainWindow(),
+                            "Environment", "Select Environment", JOptionPane.QUESTION_MESSAGE, null,
+                            envs.toArray(), envs.get(0));
+                    if (selected != null) {
+                        envName = selected.toString();
+                        EnvironmentOptions.load(envFile, envName, authPanel, urlPanel);
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    public void detachEnvironment() {
+        envFile = null;
+        envName = null;
     }
     
     @Override
