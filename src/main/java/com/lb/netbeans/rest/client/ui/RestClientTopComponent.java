@@ -16,7 +16,6 @@
  */
 package com.lb.netbeans.rest.client.ui;
 
-import com.lb.netbeans.rest.client.ui.Bundle;
 import com.lb.netbeans.rest.client.event.CellDocumentListener;
 import com.lb.netbeans.rest.client.parsers.CellParamsParser;
 import com.lb.netbeans.rest.client.RestClient;
@@ -27,12 +26,9 @@ import com.lb.netbeans.rest.client.event.UrlDocumentListener;
 import com.lb.netbeans.rest.client.UserAgent;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.ProcessingException;
-import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
 import java.awt.Cursor;
-import java.awt.FileDialog;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
@@ -42,14 +38,11 @@ import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -58,20 +51,14 @@ import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
 import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 import org.openide.windows.TopComponent;
 
 /**
@@ -128,6 +115,9 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
     public static final String CALLBACK_URL_PROPERTY = "callback_url";
     public static final String CODE_VERIFIER_PROPERTY = "code_verifier";
     public static final String CODE_CHALLENGE_PROPERTY = "code_challenge";
+    
+    public static final String ENVIRONMENT_FILE_PATH_PROPERTY = "environment_file_path";
+    public static final String ENVIRONMENT_NAME_PROPERTY = "environment_name";
 
     private final RestClient client;
     private final RequestProcessor processor;
@@ -652,6 +642,14 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
         p.setProperty(CALLBACK_URL_PROPERTY, authPanel.getCallbackUrl());
         p.setProperty(CODE_VERIFIER_PROPERTY, authPanel.getCodeVerifier());
         p.setProperty(CODE_CHALLENGE_PROPERTY, authPanel.getCodeChallenge());
+        
+        if (getEnvironmentFilePath() != null) {
+            p.setProperty(ENVIRONMENT_FILE_PATH_PROPERTY, getEnvironmentFilePath());
+        }
+
+        if (getEnvironmentName() != null && !getEnvironmentName().isEmpty()) {
+            p.setProperty(ENVIRONMENT_NAME_PROPERTY, getEnvironmentName());
+        }
     }
 
     public void readProperties(java.util.Properties p) {
@@ -754,6 +752,25 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
         if (codeChallenge != null) {
             authPanel.setCodeChallenge(codeChallenge);
         }
+        
+        String environmentFilePath = p.getProperty(ENVIRONMENT_FILE_PATH_PROPERTY);
+        if (environmentFilePath != null && !environmentFilePath.isEmpty()) {
+            setEnvironmentFilePath(environmentFilePath);
+
+            // Carica effettivamente gli ambienti dal file
+            authPanel.loadEnvironments(environmentFilePath);
+
+            String environmentName = p.getProperty(ENVIRONMENT_NAME_PROPERTY);
+            if (environmentName != null && !environmentName.isEmpty()) {
+                setEnvironmentName(environmentName);
+                authPanel.setSelectedItemEnvironment(environmentName);
+                authPanel.loadSelectedEnvironment();
+            }
+        }
+    }
+    
+    public UrlPanel getUrlPanel() {
+        return urlPanel;
     }
 
     public String getUrl() {
@@ -879,6 +896,28 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
                 responsePanel.addHeader(key, val);
             }
         });
+    }
+    
+    public void setEnvironmentFilePath(String environmentFilePath) {
+        if (authPanel != null) {
+            authPanel.setEnvironmentFilePath(environmentFilePath);
+        }
+    }
+
+    public String getEnvironmentFilePath() {
+        return authPanel != null ? authPanel.getEnvironmentFilePath() : null;
+    }
+
+    public void setEnvironmentName(String environmentName) {
+        if (authPanel != null && environmentName != null && !environmentName.isEmpty()) {
+            authPanel.setSelectedItemEnvironment(environmentName); //environmentComboBox.setSelectedItem(environmentName);
+            authPanel.loadSelectedEnvironment();
+        }
+    }
+
+    public String getEnvironmentName() {
+        return authPanel != null && authPanel.getSelectedItemEnvironment() != null ? 
+               authPanel.getSelectedItemEnvironment() : "";
     }
 
     /**

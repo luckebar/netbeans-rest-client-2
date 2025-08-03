@@ -17,17 +17,48 @@
 package com.lb.netbeans.rest.client.ui;
 
 import com.lb.netbeans.rest.client.RestClient;
+import com.lb.netbeans.rest.client.config.EnvironmentConfig;
+import com.lb.netbeans.rest.client.config.EnvironmentManager;
 import jakarta.ws.rs.ProcessingException;
 import java.awt.CardLayout;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Map;
+import java.util.logging.Level;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentListener;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
+
+@NbBundle.Messages({
+    "CTL_SaveEnvironment=Salva Configurazione",
+    "CTL_SaveEnvironmentDialogTitle=Salva Configurazione Ambiente",
+    "CTL_LoadEnvironmentDialogTitle=Carica Configurazione Ambiente",
+    "CTL_AddEnvironment=Aggiungi",
+    "CTL_DetachEnvironment=Scollega Ambiente",
+    "LBL_Environment=Ambiente:",
+    "LBL_EnvironmentFile=File Ambiente:",
+    "MSG_EnvironmentNamePrompt=Inserisci il nome dell'ambiente:",
+    "MSG_EnvironmentNameTitle=Nuovo Ambiente",
+    "MSG_EnvironmentSaveSuccess={0} salvato con successo!",
+    "MSG_EnvironmentSaveError=Errore nel salvataggio: {0}",
+    "MSG_EnvironmentLoadError=Errore nel caricamento: {0}",
+    "MSG_EnvironmentFileNotSelected=Nessun file ambiente selezionato.",
+    "MSG_EnvironmentNameRequired=Il nome dell'ambiente è obbligatorio.",
+    "MSG_EnvironmentAlreadyExists=Un ambiente con questo nome esiste già.",
+    "MSG_EnvironmentDetached=Configurazione ambiente scollegata."
+})
 /**
  *
  * @author Javier Llorente
@@ -37,6 +68,10 @@ public class AuthPanel extends javax.swing.JPanel {
 
     private RestClient client;
     
+    private FileObject currentFile;
+    private String environmentFilePath;
+    private Map<String, EnvironmentConfig> environments;
+    private Logger logger = Logger.getLogger(AuthPanel.class.getName());
     /**
      * Creates new form AuthPanel
      */
@@ -48,6 +83,214 @@ public class AuthPanel extends javax.swing.JPanel {
     
     public void setRestClient(RestClient client) {
         this.client = client;
+    }
+    
+        public void setCurrentFile(FileObject currentFile) {
+        this.currentFile = currentFile;
+    }
+    
+    public void setEnvironmentFilePath(String environmentFilePath) {
+        this.environmentFilePath = environmentFilePath;
+        updateEnvironmentUI();
+    }
+    
+    public String getEnvironmentFilePath() {
+        return environmentFilePath;
+    }
+    
+    public void loadEnvironments(String filePath) {
+        try {
+            File file = new File(filePath);
+            environments = EnvironmentManager.loadEnvironments(file);
+            updateEnvironmentComboBox();
+            if (!environments.isEmpty()) {
+                environmentComboBox.setSelectedIndex(0);
+                loadSelectedEnvironment();
+            }
+            setEnvironmentFilePath(filePath);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Error loading environments", ex);
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                NbBundle.getMessage(AuthPanel.class, "MSG_EnvironmentLoadError", ex.getMessage()),
+                NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+        }
+    }
+    
+    private void updateEnvironmentUI() {
+        boolean hasEnvironmentFile = environmentFilePath != null && !environmentFilePath.isEmpty();
+        
+        environmentComboBox.setEnabled(hasEnvironmentFile);
+        addEnvironmentButton.setEnabled(hasEnvironmentFile);
+        saveEnvironmentButton.setEnabled(hasEnvironmentFile);
+        detachEnvironmentButton.setVisible(hasEnvironmentFile);
+        
+        if (hasEnvironmentFile) {
+            //environmentFileLabel.setText(NbBundle.getMessage(AuthPanel.class, "LBL_EnvironmentFile") + " " + environmentFilePath);
+        } else {
+            //environmentFileLabel.setText(NbBundle.getMessage(AuthPanel.class, "LBL_EnvironmentFile"));
+            environmentComboBox.setModel(new DefaultComboBoxModel<>());
+        }
+    }
+    
+    private void updateEnvironmentComboBox() {
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        if (environments != null) {
+            for (String name : environments.keySet()) {
+                model.addElement(name);
+            }
+        }
+        environmentComboBox.setModel(model);
+    }
+    
+    private void saveCurrentConfiguration() {
+        if (environmentFilePath == null || environmentFilePath.isEmpty()) {
+            saveEnvironmentAs();
+        } else {
+            updateExistingEnvironment();
+        }
+    }
+    
+    private void saveEnvironmentAs() {
+        File file = EnvironmentManager.chooseEnvironmentFileForSave(getTopComponent());
+        if (file == null) {
+            return;
+        }
+        String environmentName = EnvironmentManager.promptForEnvironmentName();
+        if (environmentName == null || environmentName.trim().isEmpty()) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(AuthPanel.class, "MSG_EnvironmentNameRequired"), NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            return;
+        }
+        try {
+            EnvironmentConfig config = getCurrentConfiguration(environmentName);
+            EnvironmentManager.saveEnvironment(file, environmentName, config);
+            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(AuthPanel.class, "MSG_EnvironmentSaveSuccess", environmentName), NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            environmentFilePath = file.getAbsolutePath();
+            loadEnvironments(environmentFilePath);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Error saving environment", ex);
+            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(AuthPanel.class, "MSG_EnvironmentSaveError", ex.getMessage()), NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+        }
+    }
+    
+    private void updateExistingEnvironment() {
+        String environmentName = (String) environmentComboBox.getSelectedItem();
+        if (environmentName == null) {
+            environmentName = EnvironmentManager.promptForEnvironmentName();
+            if (environmentName == null || environmentName.trim().isEmpty()) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(AuthPanel.class, "MSG_EnvironmentNameRequired"),
+                    NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
+                return;
+            }
+        }
+        
+        try {
+            EnvironmentConfig config = getCurrentConfiguration(environmentName);
+            EnvironmentManager.updateEnvironment(new File(environmentFilePath), environmentName, config);
+            
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                NbBundle.getMessage(AuthPanel.class, "MSG_EnvironmentSaveSuccess", environmentName),
+                NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            
+            loadEnvironments(environmentFilePath);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Error updating environment", ex);
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                NbBundle.getMessage(AuthPanel.class, "MSG_EnvironmentSaveError", ex.getMessage()),
+                NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+        }
+    }
+    
+    private EnvironmentConfig getCurrentConfiguration(String environmentName) {
+        EnvironmentConfig config = new EnvironmentConfig();
+        config.setEnvironmentName(environmentName);
+        config.setAuthType(authComboBox.getSelectedItem().toString());
+        config.setUsername(usernameTextField.getText());
+        config.setPassword(new String(passwordField.getPassword()));
+        config.setPasswordSave(salvaPassword.isSelected());
+        config.setToken(tokenTextField.getText());
+        config.setAuthUrl(authUrlTextField.getText());
+        config.setCallbackUrl(callbackUrlTextField.getText());
+        config.setCodeVerifier(codeVerifierTextField.getText());
+        config.setCodeChallenge(codeChallengeTextField.getText());
+        config.setGrantType(grantTypeComboBox.getSelectedItem().toString());
+        config.setAccessTokenUrl(accessTokenUrlTextField.getText());
+        config.setClientId(clientIdTextField.getText());
+        config.setClientSecret(clientSecretTextField.getText());
+        config.setScope(scopeTextField.getText());
+        config.setAuthenticationMode(authenticationSendModeComboBox.getSelectedItem().toString());
+        
+        // Otteniamo l'URL dal componente padre
+        if (getParent() instanceof RestClientTopComponent) {
+            RestClientTopComponent topComponent = (RestClientTopComponent) getParent();
+            config.setUrl(topComponent.getUrl());
+        }
+        
+        return config;
+    }
+    
+    public void loadSelectedEnvironment() {
+        String environmentName = (String) environmentComboBox.getSelectedItem();
+        if (environmentName == null || environments == null || !environments.containsKey(environmentName)) {
+            return;
+        }
+        
+        EnvironmentConfig config = environments.get(environmentName);
+        
+        // Impostiamo i valori nel pannello
+        if (!config.getAuthType().isEmpty() && !config.getAuthType().equals(EnvironmentManager.IMPORT_FILE_PROPERTIES)) {
+            authComboBox.setSelectedItem(config.getAuthType());
+        }
+        usernameTextField.setText(config.getUsername());
+        passwordField.setText(config.getPassword());
+        salvaPassword.setSelected(config.isPasswordSave());
+        tokenTextField.setText(config.getToken());
+        authUrlTextField.setText(config.getAuthUrl());
+        callbackUrlTextField.setText(config.getCallbackUrl());
+        codeVerifierTextField.setText(config.getCodeVerifier());
+        codeChallengeTextField.setText(config.getCodeChallenge());
+        grantTypeComboBox.setSelectedItem(config.getGrantType());
+        accessTokenUrlTextField.setText(config.getAccessTokenUrl());
+        clientIdTextField.setText(config.getClientId());
+        clientSecretTextField.setText(config.getClientSecret());
+        scopeTextField.setText(config.getScope());
+        authenticationSendModeComboBox.setSelectedItem(config.getAuthenticationMode());
+        
+        // Impostiamo l'URL nel componente padre
+        if (getParent() instanceof RestClientTopComponent && !config.getUrl().isEmpty()) {
+            RestClientTopComponent topComponent = (RestClientTopComponent) getParent();
+            topComponent.setUrl(config.getUrl());
+            
+            // Imposta il focus sull'URL per evidenziare il cambiamento
+            SwingUtilities.invokeLater(() -> {
+                topComponent.getUrlPanel().requestUrlFocus();
+            });
+        }
+    }
+    
+    private void detachEnvironment() {
+        environmentFilePath = null;
+        environments = null;
+        updateEnvironmentUI();
+        
+        NotifyDescriptor nd = new NotifyDescriptor.Message(
+                NbBundle.getMessage(AuthPanel.class, "MSG_EnvironmentDetached"),
+            NotifyDescriptor.INFORMATION_MESSAGE);
+        DialogDisplayer.getDefault().notify(nd);
+    }
+    
+    private RestClientTopComponent getTopComponent() {
+        if (getParent() instanceof RestClientTopComponent) {
+            return (RestClientTopComponent) getParent();
+        }
+        return null;
     }
     
     public String getAuthType() {
@@ -205,6 +448,14 @@ public class AuthPanel extends javax.swing.JPanel {
             getNewAccessTokenButton.setEnabled(true);
         }
     }
+    
+    public void setSelectedItemEnvironment(String environmentName) {
+        environmentComboBox.setSelectedItem(environmentName);
+    }
+    
+    public String getSelectedItemEnvironment() {
+        return environmentComboBox.getSelectedItem().toString();
+    }
 
     // Aggiungi questi metodi di supporto
     private String generateCodeVerifier() {
@@ -225,6 +476,8 @@ public class AuthPanel extends javax.swing.JPanel {
             throw new RuntimeException(ex);
         }
     }
+    
+    
     
 
     /**
@@ -270,10 +523,14 @@ public class AuthPanel extends javax.swing.JPanel {
         passwordField = new javax.swing.JPasswordField();
         salvaPasswordLabel = new javax.swing.JLabel();
         salvaPassword = new javax.swing.JCheckBox();
+        saveEnvironmentButton = new javax.swing.JButton();
+        environmentComboBox = new javax.swing.JComboBox<>();
+        addEnvironmentButton = new javax.swing.JButton();
+        detachEnvironmentButton = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(800, 144));
 
-        authComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "No Auth", "Bearer Token", "Basic Auth" }));
+        authComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "No Auth", "Bearer Token", "Basic Auth", "Import File Properties" }));
         authComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 authComboBoxActionPerformed(evt);
@@ -286,11 +543,11 @@ public class AuthPanel extends javax.swing.JPanel {
         noAuthPanel.setLayout(noAuthPanelLayout);
         noAuthPanelLayout.setHorizontalGroup(
             noAuthPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 666, Short.MAX_VALUE)
+            .addGap(0, 582, Short.MAX_VALUE)
         );
         noAuthPanelLayout.setVerticalGroup(
             noAuthPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 387, Short.MAX_VALUE)
+            .addGap(0, 554, Short.MAX_VALUE)
         );
 
         authTypePanel.add(noAuthPanel, "No Auth");
@@ -380,7 +637,7 @@ public class AuthPanel extends javax.swing.JPanel {
                         .addGroup(bearerTokenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(codeVerifierTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(codeChallengeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(90, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         bearerTokenPanelLayout.setVerticalGroup(
             bearerTokenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -431,7 +688,7 @@ public class AuthPanel extends javax.swing.JPanel {
                     .addComponent(authenticationSendModeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(getNewAccessTokenButton)
-                .addContainerGap(27, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         authTypePanel.add(bearerTokenPanel, "Bearer Token");
@@ -461,7 +718,7 @@ public class AuthPanel extends javax.swing.JPanel {
                         .addComponent(salvaPasswordLabel)
                         .addGap(18, 18, 18)
                         .addComponent(salvaPassword)))
-                .addContainerGap(272, Short.MAX_VALUE))
+                .addContainerGap(187, Short.MAX_VALUE))
         );
         basicAuthPanelLayout.setVerticalGroup(
             basicAuthPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -478,10 +735,34 @@ public class AuthPanel extends javax.swing.JPanel {
                 .addGroup(basicAuthPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(salvaPasswordLabel)
                     .addComponent(salvaPassword))
-                .addContainerGap(276, Short.MAX_VALUE))
+                .addContainerGap(443, Short.MAX_VALUE))
         );
 
         authTypePanel.add(basicAuthPanel, "Basic Auth");
+
+        org.openide.awt.Mnemonics.setLocalizedText(saveEnvironmentButton, "Save Config");
+        saveEnvironmentButton.setToolTipText("");
+        saveEnvironmentButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveEnvironmentButtonActionPerformed(evt);
+            }
+        });
+
+        environmentComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        org.openide.awt.Mnemonics.setLocalizedText(addEnvironmentButton, "Add Env");
+        addEnvironmentButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addEnvironmentButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(detachEnvironmentButton, "Disconnect Config");
+        detachEnvironmentButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                detachEnvironmentButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -489,19 +770,31 @@ public class AuthPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(authComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(authTypePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(environmentComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(addEnvironmentButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(saveEnvironmentButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(authComboBox, 0, 164, Short.MAX_VALUE)
+                    .addComponent(detachEnvironmentButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(authTypePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 618, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(authComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
+                        .addComponent(environmentComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(addEnvironmentButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 205, Short.MAX_VALUE)
+                        .addComponent(saveEnvironmentButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(detachEnvironmentButton))
                     .addComponent(authTypePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -510,6 +803,25 @@ public class AuthPanel extends javax.swing.JPanel {
     private void authComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_authComboBoxActionPerformed
         CardLayout cardLayout = (CardLayout) authTypePanel.getLayout();
         cardLayout.show(authTypePanel, authComboBox.getSelectedItem().toString());
+        
+        if (authComboBox.getSelectedItem().toString().equals(EnvironmentManager.IMPORT_FILE_PROPERTIES)) {
+            if (environmentFilePath == null || environmentFilePath.isEmpty()) {
+                // Carica un nuovo file
+                File file = EnvironmentManager.chooseEnvironmentFileForLoad(getTopComponent());
+                if (file != null) {
+                    loadEnvironments(file.getAbsolutePath());
+                } else {
+                    authComboBox.setSelectedItem("No Auth");
+                }
+            } else {
+                // File già caricato, mostra semplicemente gli ambienti
+                updateEnvironmentComboBox();
+                if (!environments.isEmpty()) {
+                    environmentComboBox.setSelectedIndex(0);
+                    loadSelectedEnvironment();
+                }
+            }
+        }
     }//GEN-LAST:event_authComboBoxActionPerformed
 
     private void getNewAccessTokenButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getNewAccessTokenButtonActionPerformed
@@ -592,10 +904,57 @@ public class AuthPanel extends javax.swing.JPanel {
         clientSecretTextField.setVisible(!isPKCE);
     }//GEN-LAST:event_grantTypeComboBoxActionPerformed
 
+    private void addEnvironmentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addEnvironmentButtonActionPerformed
+
+        String environmentName = EnvironmentManager.promptForEnvironmentName();
+        if (environmentName == null || environmentName.trim().isEmpty()) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                NbBundle.getMessage(AuthPanel.class, "MSG_EnvironmentNameRequired"),
+                NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            return;
+        }
+        
+        if (environments.containsKey(environmentName)) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                NbBundle.getMessage(AuthPanel.class, "MSG_EnvironmentAlreadyExists"),
+                NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            return;
+        }
+        
+        try {
+            EnvironmentConfig config = getCurrentConfiguration(environmentName);
+            EnvironmentManager.updateEnvironment(new File(environmentFilePath), environmentName, config);
+            
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                NbBundle.getMessage(AuthPanel.class, "MSG_EnvironmentSaveSuccess", environmentName),
+                NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            
+            loadEnvironments(environmentFilePath);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Error adding new environment", ex);
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                NbBundle.getMessage(AuthPanel.class, "MSG_EnvironmentSaveError", ex.getMessage()),
+                NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+        }
+    }//GEN-LAST:event_addEnvironmentButtonActionPerformed
+
+    private void saveEnvironmentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveEnvironmentButtonActionPerformed
+        saveCurrentConfiguration();
+    }//GEN-LAST:event_saveEnvironmentButtonActionPerformed
+
+    private void detachEnvironmentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_detachEnvironmentButtonActionPerformed
+        detachEnvironment();
+    }//GEN-LAST:event_detachEnvironmentButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel accessTokenUrlLabel;
     private javax.swing.JTextField accessTokenUrlTextField;
+    private javax.swing.JButton addEnvironmentButton;
     private javax.swing.JComboBox<String> authComboBox;
     private javax.swing.JPanel authTypePanel;
     private javax.swing.JLabel authUrlLabel;
@@ -614,6 +973,8 @@ public class AuthPanel extends javax.swing.JPanel {
     private javax.swing.JTextField codeChallengeTextField;
     private javax.swing.JLabel codeVerifierLabel;
     private javax.swing.JTextField codeVerifierTextField;
+    private javax.swing.JButton detachEnvironmentButton;
+    private javax.swing.JComboBox<String> environmentComboBox;
     private javax.swing.JButton getNewAccessTokenButton;
     private javax.swing.JComboBox<String> grantTypeComboBox;
     private javax.swing.JLabel grantTypeLabel;
@@ -622,6 +983,7 @@ public class AuthPanel extends javax.swing.JPanel {
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JCheckBox salvaPassword;
     private javax.swing.JLabel salvaPasswordLabel;
+    private javax.swing.JButton saveEnvironmentButton;
     private javax.swing.JLabel scopeLabel;
     private javax.swing.JTextField scopeTextField;
     private javax.swing.JLabel tokenLabel;

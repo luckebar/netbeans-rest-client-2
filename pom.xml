@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.lb</groupId>
     <artifactId>netbeans-rest-client-2</artifactId>
-    <version>1.0.0</version>
-    <name>REST Client</name>
-    <description>A REST client for NetBeans</description>
+    <version>1.0.10</version>
+    <name>REST Client 2</name>
+    <description>A Complex REST client for NetBeans</description>
     <packaging>nbm</packaging>
     <url>https://github.com/luckebar/netbeans-rest-client-2</url>
     <properties>
@@ -261,9 +261,22 @@
             <version>RELEASE260</version>
             <type>jar</type>
         </dependency>
+        
         <dependency>
             <groupId>org.netbeans.api</groupId>
-            <artifactId>org-openide-filesystems</artifactId>
+            <artifactId>org-netbeans-api-annotations-common</artifactId>
+            <version>RELEASE260</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util</artifactId>
+            <version>RELEASE260</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-awt</artifactId>
             <version>RELEASE260</version>
         </dependency>
         <dependency>
@@ -288,8 +301,26 @@
             <version>RELEASE260</version>
             <type>jar</type>
         </dependency>
-        
-        
+        <!--dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-projectuiapi-base</artifactId>
+            <version>RELEASE260</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-projectuiapi</artifactId>
+            <version>RELEASE260</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-dialogs</artifactId>
+            <version>RELEASE260</version>
+        </dependency-->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-filesystems-nb</artifactId>
+            <version>RELEASE260</version>
+        </dependency>
         <dependency>
             <groupId>jakarta.json</groupId>
             <artifactId>jakarta.json-api</artifactId>
