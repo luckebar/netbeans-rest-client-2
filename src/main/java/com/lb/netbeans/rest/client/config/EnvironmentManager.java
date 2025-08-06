@@ -1,3 +1,18 @@
+/*
+ * Copyright 2025        Luca Bartoli <lbdevweb@gmail.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.lb.netbeans.rest.client.config;
 
 
@@ -18,6 +33,10 @@ import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
+/**
+ *
+ * @author Luca Bartoli <lbdevweb@gmail.com>
+ */
 public class EnvironmentManager {
     private static final Logger logger = Logger.getLogger(EnvironmentManager.class.getName());
     
@@ -178,7 +197,7 @@ public class EnvironmentManager {
         config.setClientSecret(obj.getString("clientSecret", ""));
         config.setScope(obj.getString("scope", ""));
         config.setAuthenticationMode(obj.getString("authenticationMode", ""));
-        config.setUrl(obj.getString("url", ""));
+        config.setBaseHost(obj.getString("url", ""));
         
         return config;
     }
@@ -201,7 +220,7 @@ public class EnvironmentManager {
                 .add("clientSecret", config.getClientSecret())
                 .add("scope", config.getScope())
                 .add("authenticationMode", config.getAuthenticationMode())
-                .add("url", config.getUrl());
+                .add("url", config.getBaseHost());
         
         return builder.build();
     }

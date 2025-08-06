@@ -28,17 +28,17 @@ public class EnvironmentConfig {
     private String password;
     private boolean passwordSave;
     private String token;
-    private String authUrl;
-    private String callbackUrl;
-    private String codeVerifier;
-    private String codeChallenge;
     private String grantType;
+    private String callbackUrl;
+    private String authUrl;
     private String accessTokenUrl;
     private String clientId;
     private String clientSecret;
+    private String codeChallenge;
+    private String codeVerifier;
     private String scope;
     private String authenticationMode;
-    private String url;
+    private String baseHost;
     
     public EnvironmentConfig() {
     }
@@ -48,7 +48,7 @@ public class EnvironmentConfig {
                             boolean passwordSave, String token, String authUrl, String callbackUrl, 
                             String codeVerifier, String codeChallenge, String grantType, 
                             String accessTokenUrl, String clientId, String clientSecret, String scope, 
-                            String authenticationMode, String url) {
+                            String authenticationMode, String baseHost) {
         this.environmentName = environmentName;
         this.authType = authType;
         this.username = username;
@@ -65,7 +65,7 @@ public class EnvironmentConfig {
         this.clientSecret = clientSecret;
         this.scope = scope;
         this.authenticationMode = authenticationMode;
-        this.url = url;
+        this.baseHost = baseHost;
     }
 
     // Getters e setters
@@ -117,8 +117,8 @@ public class EnvironmentConfig {
     public String getAuthenticationMode() { return authenticationMode; }
     public void setAuthenticationMode(String authenticationMode) { this.authenticationMode = authenticationMode; }
     
-    public String getUrl() { return url; }
-    public void setUrl(String url) { this.url = url; }
+    public String getBaseHost() { return baseHost; }
+    public void setBaseHost(String baseHost) { this.baseHost = baseHost; }
 
     @Override
     public boolean equals(Object o) {

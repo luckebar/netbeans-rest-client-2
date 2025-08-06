@@ -1,6 +1,6 @@
 /*
  * Copyright 2022 Javier Llorente <javier@opensuse.org>.
- * Copyright 2025        Luca Bartoli <lbdevweb@gmail.com>
+ * Copyright 2025 Luca Bartoli <lbdevweb@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyListener;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.Document;
 
 /**
  *
@@ -41,7 +43,40 @@ public class UrlPanel extends javax.swing.JPanel {
     }
 
     public void setUrl(String url) {
-        urlTextField.setText(url);
+        this.setUrl(url,true);
+    }
+    
+    public void setUrl(String url, boolean notifyListeners) {
+        if (!notifyListeners) {
+            // Ottieni il documento associato alla JTextField
+            Document doc = urlTextField.getDocument();
+
+            // Verifica se il documento è un'istanza di AbstractDocument
+            if (doc instanceof AbstractDocument) {
+                AbstractDocument abstractDoc = (AbstractDocument) doc;
+
+                // Ottieni tutti i listener registrati sul documento
+                javax.swing.event.DocumentListener[] listeners = abstractDoc.getListeners(javax.swing.event.DocumentListener.class);
+
+                // Rimuovi temporaneamente i listener
+                for (javax.swing.event.DocumentListener listener : listeners) {
+                    abstractDoc.removeDocumentListener(listener);
+                }
+
+                // Aggiorna il testo
+                urlTextField.setText(url);
+
+                // Reinserisci i listener
+                for (javax.swing.event.DocumentListener listener : listeners) {
+                    abstractDoc.addDocumentListener(listener);
+                }
+            } else {
+                // Gestione alternativa per implementazioni custom di Document
+                urlTextField.setText(url);
+            }
+        } else {
+            urlTextField.setText(url);
+        }
     }
 
     public String getDisplayUrl() {

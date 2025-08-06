@@ -24,11 +24,11 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="environmentComboBox" alignment="0" max="32767" attributes="0"/>
-                  <Component id="addEnvironmentButton" max="32767" attributes="0"/>
-                  <Component id="saveEnvironmentButton" alignment="0" max="32767" attributes="0"/>
-                  <Component id="authComboBox" alignment="0" pref="164" max="32767" attributes="0"/>
-                  <Component id="detachEnvironmentButton" alignment="0" max="32767" attributes="0"/>
+                  <Component id="addEnvironmentButton" min="-2" pref="164" max="-2" attributes="0"/>
+                  <Component id="saveEnvironmentButton" alignment="0" min="-2" pref="164" max="-2" attributes="0"/>
+                  <Component id="authComboBox" alignment="0" min="-2" pref="164" max="-2" attributes="0"/>
+                  <Component id="detachEnvironmentButton" alignment="0" min="-2" pref="164" max="-2" attributes="0"/>
+                  <Component id="environmentComboBox" alignment="0" min="-2" pref="164" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="authTypePanel" pref="618" max="32767" attributes="0"/>
@@ -69,6 +69,12 @@
             <StringItem index="2" value="Basic Auth"/>
             <StringItem index="3" value="Import File Properties"/>
           </StringArray>
+        </Property>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[72, 32767]"/>
+        </Property>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[72, 22]"/>
         </Property>
       </Properties>
       <Events>
@@ -437,6 +443,15 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Save Config"/>
         <Property name="toolTipText" type="java.lang.String" value=""/>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[72, 23]"/>
+        </Property>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[72, 23]"/>
+        </Property>
+        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[72, 23]"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveEnvironmentButtonActionPerformed"/>
@@ -445,14 +460,15 @@
     <Component class="javax.swing.JComboBox" name="environmentComboBox">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="4">
-            <StringItem index="0" value="Item 1"/>
-            <StringItem index="1" value="Item 2"/>
-            <StringItem index="2" value="Item 3"/>
-            <StringItem index="3" value="Item 4"/>
-          </StringArray>
+          <StringArray count="0"/>
+        </Property>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[72, 32767]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="environmentComboBoxActionPerformed"/>
+      </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
       </AuxValues>
@@ -460,6 +476,15 @@
     <Component class="javax.swing.JButton" name="addEnvironmentButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Add Env"/>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[72, 23]"/>
+        </Property>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[72, 23]"/>
+        </Property>
+        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[72, 23]"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addEnvironmentButtonActionPerformed"/>
@@ -468,6 +493,15 @@
     <Component class="javax.swing.JButton" name="detachEnvironmentButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Disconnect Config"/>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[72, 23]"/>
+        </Property>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[72, 23]"/>
+        </Property>
+        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[72, 23]"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="detachEnvironmentButtonActionPerformed"/>

@@ -38,6 +38,8 @@ import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -226,6 +228,7 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
 
         client = new RestClient();
         authPanel.setRestClient(client);
+        authPanel.setTopComponent(this);
         processor = new RequestProcessor(RestClientTopComponent.class);
     }
 
@@ -321,8 +324,8 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
         }
 
         NotifyDescriptor.Confirmation nd = new NotifyDescriptor.Confirmation(
-            "File modificato. Salvare le modifiche?",
-            "Conferma Salvataggio",
+            "File modified. Do you want to save changes?",
+            "Confirm Save",
             NotifyDescriptor.YES_NO_CANCEL_OPTION);
 
         Object res = DialogDisplayer.getDefault().notify(nd);
@@ -451,17 +454,17 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
         }
     }
     
-    @Override
-    protected void componentDeactivated() {
-        super.componentDeactivated();
-        if(modified) {
-            try {
-                save();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
+//    @Override
+//    protected void componentDeactivated() {
+//        super.componentDeactivated();
+//        if(modified) {
+//            try {
+//                save();
+//            } catch (IOException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//        }
+//    }
 /*
     private void saveAs() {
         FileDialog fd = new FileDialog(new JFrame(), "Save REST Client Config", FileDialog.SAVE);
@@ -755,8 +758,9 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
         
         String environmentFilePath = p.getProperty(ENVIRONMENT_FILE_PATH_PROPERTY);
         if (environmentFilePath != null && !environmentFilePath.isEmpty()) {
+            
             setEnvironmentFilePath(environmentFilePath);
-
+            authPanel.updateEnvironmentUI();
             // Carica effettivamente gli ambienti dal file
             authPanel.loadEnvironments(environmentFilePath);
 
@@ -766,6 +770,8 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
                 authPanel.setSelectedItemEnvironment(environmentName);
                 authPanel.loadSelectedEnvironment();
             }
+        } else {
+            authPanel.updateEnvironmentUI();
         }
     }
     
@@ -775,6 +781,51 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
 
     public String getUrl() {
         return urlPanel.getUrl();
+    }
+    
+    public void updateBaseUrl(String baseUrl) {
+        String currentUrl = urlPanel.getUrl();
+        if(currentUrl != null && !currentUrl.isEmpty()) {
+            try {
+                URL url = new URL(currentUrl);
+                String newUrl = baseUrl + url.getPath() + (url.getQuery() != null ? "?" + url.getQuery() : "");
+                urlPanel.setUrl(newUrl,false);
+            } catch (MalformedURLException ex) {
+                // Gestione errore
+            }
+        } else {
+            urlPanel.setUrl(baseUrl);
+        }
+    }
+    
+    public String getBaseUrl() {
+        String currentUrl = urlPanel.getUrl();
+        if (currentUrl != null && !currentUrl.isEmpty()) {
+            try {
+                URL url = new URL(currentUrl);
+                String protocol = url.getProtocol();
+                String host = url.getHost();
+                int port = url.getPort();
+
+                // Costruisci il base URL
+                StringBuilder baseUrl = new StringBuilder();
+                baseUrl.append(protocol).append("://").append(host);
+
+                // Aggiungi la porta solo se non è quella di default
+                if (port != -1) { // -1 significa che la porta non è specificata nell'URL
+                    if ((protocol.equals("http") && port != 80) || (protocol.equals("https") && port != 443)) {
+                        baseUrl.append(":").append(port);
+                    }
+                }
+
+                return baseUrl.toString();
+            } catch (MalformedURLException ex) {
+                logger.log(Level.WARNING, "URL non valido: {0}", currentUrl);
+                return "";
+            }
+        } else {
+            return "";
+        }
     }
 
     public void setUrl(String url) {

@@ -1,6 +1,6 @@
 /*
  * Copyright 2022 Javier Llorente <javier@opensuse.org>.
- * Copyright 2025        Luca Bartoli <lbdevweb@gmail.com>
+ * Copyright 2025 Luca Bartoli <lbdevweb@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,7 @@ import javax.swing.SwingUtilities;
 public class AuthPanel extends javax.swing.JPanel {
 
     private RestClient client;
+    private RestClientTopComponent topComponent;
     
     private FileObject currentFile;
     private String environmentFilePath;
@@ -117,12 +118,12 @@ public class AuthPanel extends javax.swing.JPanel {
         }
     }
     
-    private void updateEnvironmentUI() {
+    public void updateEnvironmentUI() {
         boolean hasEnvironmentFile = environmentFilePath != null && !environmentFilePath.isEmpty();
         
         environmentComboBox.setEnabled(hasEnvironmentFile);
         addEnvironmentButton.setEnabled(hasEnvironmentFile);
-        saveEnvironmentButton.setEnabled(hasEnvironmentFile);
+        //saveEnvironmentButton.setEnabled(hasEnvironmentFile);
         detachEnvironmentButton.setVisible(hasEnvironmentFile);
         
         if (hasEnvironmentFile) {
@@ -226,12 +227,7 @@ public class AuthPanel extends javax.swing.JPanel {
         config.setClientSecret(clientSecretTextField.getText());
         config.setScope(scopeTextField.getText());
         config.setAuthenticationMode(authenticationSendModeComboBox.getSelectedItem().toString());
-        
-        // Otteniamo l'URL dal componente padre
-        if (getParent() instanceof RestClientTopComponent) {
-            RestClientTopComponent topComponent = (RestClientTopComponent) getParent();
-            config.setUrl(topComponent.getUrl());
-        }
+        config.setBaseHost(topComponent.getBaseUrl());
         
         return config;
     }
@@ -247,6 +243,8 @@ public class AuthPanel extends javax.swing.JPanel {
         // Impostiamo i valori nel pannello
         if (!config.getAuthType().isEmpty() && !config.getAuthType().equals(EnvironmentManager.IMPORT_FILE_PROPERTIES)) {
             authComboBox.setSelectedItem(config.getAuthType());
+            CardLayout cardLayout = (CardLayout) authTypePanel.getLayout();
+            cardLayout.show(authTypePanel, config.getAuthType());
         }
         usernameTextField.setText(config.getUsername());
         passwordField.setText(config.getPassword());
@@ -262,17 +260,11 @@ public class AuthPanel extends javax.swing.JPanel {
         clientSecretTextField.setText(config.getClientSecret());
         scopeTextField.setText(config.getScope());
         authenticationSendModeComboBox.setSelectedItem(config.getAuthenticationMode());
-        
-        // Impostiamo l'URL nel componente padre
-        if (getParent() instanceof RestClientTopComponent && !config.getUrl().isEmpty()) {
-            RestClientTopComponent topComponent = (RestClientTopComponent) getParent();
-            topComponent.setUrl(config.getUrl());
-            
-            // Imposta il focus sull'URL per evidenziare il cambiamento
-            SwingUtilities.invokeLater(() -> {
-                topComponent.getUrlPanel().requestUrlFocus();
-            });
-        }
+        topComponent.updateBaseUrl(config.getBaseHost());
+        // Imposta il focus sull'URL per evidenziare il cambiamento
+        SwingUtilities.invokeLater(() -> {
+            topComponent.getUrlPanel().requestUrlFocus();
+        });
     }
     
     private void detachEnvironment() {
@@ -286,11 +278,12 @@ public class AuthPanel extends javax.swing.JPanel {
         DialogDisplayer.getDefault().notify(nd);
     }
     
+    public void setTopComponent(RestClientTopComponent topComponent) {
+        this.topComponent = topComponent;
+    }
+
     private RestClientTopComponent getTopComponent() {
-        if (getParent() instanceof RestClientTopComponent) {
-            return (RestClientTopComponent) getParent();
-        }
-        return null;
+        return topComponent;
     }
     
     public String getAuthType() {
@@ -449,12 +442,19 @@ public class AuthPanel extends javax.swing.JPanel {
         }
     }
     
+    public void showEnvironment(boolean visible) {
+        environmentComboBox.setVisible(visible);
+        addEnvironmentButton.setVisible(visible);
+        detachEnvironmentButton.setVisible(visible);
+    }
+    
     public void setSelectedItemEnvironment(String environmentName) {
         environmentComboBox.setSelectedItem(environmentName);
     }
     
     public String getSelectedItemEnvironment() {
-        return environmentComboBox.getSelectedItem().toString();
+        Object selected = environmentComboBox.getSelectedItem();
+        return (selected != null) ? selected.toString() : "";
     }
 
     // Aggiungi questi metodi di supporto
@@ -531,6 +531,8 @@ public class AuthPanel extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(800, 144));
 
         authComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "No Auth", "Bearer Token", "Basic Auth", "Import File Properties" }));
+        authComboBox.setMaximumSize(new java.awt.Dimension(72, 32767));
+        authComboBox.setMinimumSize(new java.awt.Dimension(72, 22));
         authComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 authComboBoxActionPerformed(evt);
@@ -742,15 +744,26 @@ public class AuthPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(saveEnvironmentButton, "Save Config");
         saveEnvironmentButton.setToolTipText("");
+        saveEnvironmentButton.setMaximumSize(new java.awt.Dimension(72, 23));
+        saveEnvironmentButton.setMinimumSize(new java.awt.Dimension(72, 23));
+        saveEnvironmentButton.setPreferredSize(new java.awt.Dimension(72, 23));
         saveEnvironmentButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveEnvironmentButtonActionPerformed(evt);
             }
         });
 
-        environmentComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        environmentComboBox.setMaximumSize(new java.awt.Dimension(72, 32767));
+        environmentComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                environmentComboBoxActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(addEnvironmentButton, "Add Env");
+        addEnvironmentButton.setMaximumSize(new java.awt.Dimension(72, 23));
+        addEnvironmentButton.setMinimumSize(new java.awt.Dimension(72, 23));
+        addEnvironmentButton.setPreferredSize(new java.awt.Dimension(72, 23));
         addEnvironmentButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addEnvironmentButtonActionPerformed(evt);
@@ -758,6 +771,9 @@ public class AuthPanel extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(detachEnvironmentButton, "Disconnect Config");
+        detachEnvironmentButton.setMaximumSize(new java.awt.Dimension(72, 23));
+        detachEnvironmentButton.setMinimumSize(new java.awt.Dimension(72, 23));
+        detachEnvironmentButton.setPreferredSize(new java.awt.Dimension(72, 23));
         detachEnvironmentButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 detachEnvironmentButtonActionPerformed(evt);
@@ -771,11 +787,11 @@ public class AuthPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(environmentComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(addEnvironmentButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(saveEnvironmentButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(authComboBox, 0, 164, Short.MAX_VALUE)
-                    .addComponent(detachEnvironmentButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(addEnvironmentButton, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(saveEnvironmentButton, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(authComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(detachEnvironmentButton, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(environmentComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(authTypePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 618, Short.MAX_VALUE)
                 .addContainerGap())
@@ -790,11 +806,11 @@ public class AuthPanel extends javax.swing.JPanel {
                         .addGap(18, 18, 18)
                         .addComponent(environmentComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(addEnvironmentButton)
+                        .addComponent(addEnvironmentButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 205, Short.MAX_VALUE)
-                        .addComponent(saveEnvironmentButton)
+                        .addComponent(saveEnvironmentButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(detachEnvironmentButton))
+                        .addComponent(detachEnvironmentButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(authTypePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -802,9 +818,10 @@ public class AuthPanel extends javax.swing.JPanel {
 
     private void authComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_authComboBoxActionPerformed
         CardLayout cardLayout = (CardLayout) authTypePanel.getLayout();
-        cardLayout.show(authTypePanel, authComboBox.getSelectedItem().toString());
         
-        if (authComboBox.getSelectedItem().toString().equals(EnvironmentManager.IMPORT_FILE_PROPERTIES)) {
+        String authComboBoxSelected = authComboBox.getSelectedItem().toString();
+        
+        if (authComboBoxSelected.equals(EnvironmentManager.IMPORT_FILE_PROPERTIES)) {
             if (environmentFilePath == null || environmentFilePath.isEmpty()) {
                 // Carica un nuovo file
                 File file = EnvironmentManager.chooseEnvironmentFileForLoad(getTopComponent());
@@ -821,6 +838,8 @@ public class AuthPanel extends javax.swing.JPanel {
                     loadSelectedEnvironment();
                 }
             }
+        } else {
+            cardLayout.show(authTypePanel, authComboBoxSelected);
         }
     }//GEN-LAST:event_authComboBoxActionPerformed
 
@@ -949,6 +968,10 @@ public class AuthPanel extends javax.swing.JPanel {
     private void detachEnvironmentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_detachEnvironmentButtonActionPerformed
         detachEnvironment();
     }//GEN-LAST:event_detachEnvironmentButtonActionPerformed
+
+    private void environmentComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_environmentComboBoxActionPerformed
+        loadSelectedEnvironment();
+    }//GEN-LAST:event_environmentComboBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
