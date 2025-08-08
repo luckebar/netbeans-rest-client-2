@@ -80,7 +80,7 @@ public class RestClient {
     public static final String BEARER_TOKEN = "Bearer Token";
     public static final String BASIC_AUTH = "Basic Auth";
     
-    public static final String DEFAULT_CALLBACK_URL = "http://localhost:8080/";
+    public static final String DEFAULT_CALLBACK_URL = "http://localhost:8383/";
     
     private static final Logger logger = Logger.getLogger(RestClient.class.getName());
     private Client client;

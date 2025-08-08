@@ -31,7 +31,7 @@
                   <Component id="environmentComboBox" alignment="0" min="-2" pref="164" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="authTypePanel" pref="618" max="32767" attributes="0"/>
+              <Component id="authTypePanel" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -47,7 +47,7 @@
                       <Component id="environmentComboBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="addEnvironmentButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="205" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="saveEnvironmentButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="detachEnvironmentButton" min="-2" max="-2" attributes="0"/>
@@ -103,7 +103,7 @@
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="554" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="467" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>
@@ -122,28 +122,30 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Group type="103" groupAlignment="1" attributes="0">
+                              <Group type="102" alignment="1" attributes="0">
+                                  <Component id="jLabel1" min="-2" pref="308" max="-2" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
                                   <Component id="getNewAccessTokenButton" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                          <Component id="authenticationLabel" max="32767" attributes="0"/>
-                                          <Component id="scopeLabel" max="32767" attributes="0"/>
-                                          <Component id="clientSecretLabel" max="32767" attributes="0"/>
-                                          <Component id="clientIdLabel" max="32767" attributes="0"/>
-                                          <Component id="accessTokenUrlLabel" pref="152" max="32767" attributes="0"/>
-                                          <Component id="tokenLabel" alignment="0" max="32767" attributes="0"/>
-                                          <Component id="grantTypeLabel" alignment="0" max="32767" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="grantTypeComboBox" alignment="0" pref="400" max="32767" attributes="0"/>
-                                          <Component id="accessTokenUrlTextField" alignment="0" pref="400" max="32767" attributes="0"/>
-                                          <Component id="clientIdTextField" alignment="0" pref="400" max="32767" attributes="0"/>
-                                          <Component id="clientSecretTextField" alignment="0" pref="400" max="32767" attributes="0"/>
-                                          <Component id="scopeTextField" pref="400" max="32767" attributes="0"/>
-                                          <Component id="tokenTextField" alignment="0" pref="400" max="32767" attributes="0"/>
-                                          <Component id="authenticationSendModeComboBox" alignment="0" pref="400" max="32767" attributes="0"/>
-                                      </Group>
+                              </Group>
+                              <Group type="102" alignment="1" attributes="0">
+                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                      <Component id="authenticationLabel" max="32767" attributes="0"/>
+                                      <Component id="scopeLabel" max="32767" attributes="0"/>
+                                      <Component id="clientSecretLabel" max="32767" attributes="0"/>
+                                      <Component id="clientIdLabel" max="32767" attributes="0"/>
+                                      <Component id="accessTokenUrlLabel" pref="152" max="32767" attributes="0"/>
+                                      <Component id="tokenLabel" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="grantTypeLabel" alignment="0" max="32767" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="grantTypeComboBox" alignment="0" pref="400" max="32767" attributes="0"/>
+                                      <Component id="accessTokenUrlTextField" alignment="0" pref="400" max="32767" attributes="0"/>
+                                      <Component id="clientIdTextField" alignment="0" pref="400" max="32767" attributes="0"/>
+                                      <Component id="clientSecretTextField" alignment="0" pref="400" max="32767" attributes="0"/>
+                                      <Component id="scopeTextField" pref="400" max="32767" attributes="0"/>
+                                      <Component id="tokenTextField" alignment="0" pref="400" max="32767" attributes="0"/>
+                                      <Component id="authenticationSendModeComboBox" alignment="0" pref="400" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
@@ -169,7 +171,7 @@
                               </Group>
                           </Group>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="42" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -232,7 +234,10 @@
                           <Component id="authenticationSendModeComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="getNewAccessTokenButton" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="getNewAccessTokenButton" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
@@ -325,7 +330,7 @@
             </Component>
             <Component class="javax.swing.JLabel" name="callbackUrlLabel">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Callback URL:"/>
+                <Property name="text" type="java.lang.String" value="Callback URL: *"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="callbackUrlTextField">
@@ -342,17 +347,22 @@
             </Component>
             <Component class="javax.swing.JLabel" name="codeChallengeLabel">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Code Challenge:"/>
+                <Property name="text" type="java.lang.String" value="Code Challenge: *"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="codeChallengeTextField">
             </Component>
             <Component class="javax.swing.JLabel" name="codeVerifierLabel">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Code Verifier:"/>
+                <Property name="text" type="java.lang.String" value="Code Verifier: *"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="codeVerifierTextField">
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel1">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="* Auto generated, change only if necessary"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>
@@ -408,7 +418,7 @@
                           <Component id="salvaPasswordLabel" min="-2" max="-2" attributes="0"/>
                           <Component id="salvaPassword" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="443" max="32767" attributes="0"/>
+                      <EmptySpace pref="356" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
