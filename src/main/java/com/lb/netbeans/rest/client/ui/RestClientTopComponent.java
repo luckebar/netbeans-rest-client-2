@@ -62,6 +62,9 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.netbeans.spi.actions.AbstractSavable;
 
 /**
  * Top component which displays something.
@@ -88,7 +91,7 @@ import org.openide.windows.TopComponent;
     "CTL_RestClientTopComponent=REST Client",
     "HINT_RestClientTopComponent="
 })
-public class RestClientTopComponent extends TopComponent implements SaveCookie {
+public class RestClientTopComponent extends TopComponent {
 
     private static final Logger logger = Logger.getLogger(RestClientTopComponent.class.getName());
     public static final String PROP_DIRTY = "dirty";
@@ -127,8 +130,9 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
 
     private FileObject currentFile;
     private boolean modified = false;
-    // Aggiungere questa variabile d'istanza
-    private SaveCookie saveCookie;
+    
+    private RestClientSavable savable;
+    private final InstanceContent content = new InstanceContent();
 
     public RestClientTopComponent(FileObject currentFile) {
         this();
@@ -139,7 +143,7 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
     public RestClientTopComponent() {
         initComponents();
         
-        associateLookup(Lookups.fixed(this)); // Aggiungi questa linea
+        associateLookup(new AbstractLookup(content));
         setupModificationListeners();
 
         setName(Bundle.CTL_RestClientTopComponent());
@@ -232,41 +236,13 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
         processor = new RequestProcessor(RestClientTopComponent.class);
     }
 
-    private void setModified(boolean modified) {
-        if (this.modified != modified) {
-            this.modified = modified;
-            if (modified) {
-                if (saveCookie == null) {
-                    saveCookie = (SaveCookie) () -> saveToFile();
-                }
-                associateLookup(Lookups.fixed(this, saveCookie));
-            } else {
-                associateLookup(Lookups.fixed(this));
-                saveCookie = null;
-            }
-            firePropertyChange("modified", !modified, modified);
-        }
-    }
-    
-    private void resetModified() {
-        if (modified) {
-            modified = false;
-            // Verifica se il lookup è già impostato correttamente prima di associarlo
-            if (getLookup().lookup(RestClientTopComponent.class) == null) {
-                associateLookup(Lookups.fixed(this));
-            }
-            firePropertyChange(PROP_DIRTY, true, false);
-        }
-    }
+
 
     private void markAsModified() {
         if (!modified) {
             modified = true;
-            saveCookie = this;
-            // Aggiorna il lookup solo se necessario
-            if (getLookup().lookup(SaveCookie.class) == null) {
-                associateLookup(Lookups.fixed(this, saveCookie));
-            }
+            savable = new RestClientSavable();
+            content.add(savable);
             firePropertyChange(PROP_DIRTY, false, true);
         }
     }
@@ -274,28 +250,46 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
     private void markAsUnmodified() {
         if(modified) {
             modified = false;
-            saveCookie = null;
-            //associateLookup(Lookups.fixed(this));
+            if (savable != null) {
+                content.remove(savable);
+                savable = null;
+            }
             firePropertyChange(PROP_DIRTY, true, false);
         }
     }
 
-
-    @Override
-    public Lookup getLookup() {
-        if (modified && saveCookie != null) {
-            return Lookups.fixed(this, saveCookie);
+    private class RestClientSavable extends AbstractSavable {
+        RestClientSavable() {
+            register();
         }
-        return Lookups.singleton(this);
+
+        @Override
+        protected void handleSave() throws IOException {
+            saveToFile();
+            content.remove(this);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj == this;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
+
+        @Override
+        protected String findDisplayName() {
+            return "Rest Client 2";
+        }
+
     }
 
     @Override
     protected void componentOpened() {
         super.componentOpened();
         urlPanel.requestUrlFocus();
-        // Non chiamare resetModified() qui se non necessario
-        // La modifica viene gestita dai listener
-        //resetModified(); // Resetta lo stato all'apertura
     }
 
     @Override
@@ -303,14 +297,11 @@ public class RestClientTopComponent extends TopComponent implements SaveCookie {
 
     }
 
-    @Override
     public void save() throws IOException {
         if (!modified) return;
 
         try {
             saveToFile();
-            markAsUnmodified(); // Aggiungi questo
-            setDisplayName(currentFile.getNameExt());
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             throw ex;

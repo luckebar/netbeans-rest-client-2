@@ -217,7 +217,6 @@ public class RestClientDataObject extends MultiDataObject {
 
     public void setRestClientTopComponent(RestClientTopComponent restClientTopComponent) {
         this.restClientTopComponent = restClientTopComponent;
-        getCookieSet().add(restClientTopComponent);
     }
     
     /**
