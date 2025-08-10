@@ -329,6 +329,8 @@ public class RestClientTopComponent extends TopComponent {
                 return false;
             }
         } else if (res == NotifyDescriptor.NO_OPTION) {
+            // Remove savable to ensure Save All is deactivated
+            markAsUnmodified();
             return true; // Chiudi senza salvare
         }
         return false; // Annulla chiusura
@@ -367,6 +369,11 @@ public class RestClientTopComponent extends TopComponent {
     @Override
     public void componentClosed() {
         // TODO add custom code on component closing
+        // Ensure pending savable is cleaned up when component is closed
+        if (savable != null) {
+            content.remove(savable);
+            savable = null;
+        }
     }
 
     public FileObject getFile() {
