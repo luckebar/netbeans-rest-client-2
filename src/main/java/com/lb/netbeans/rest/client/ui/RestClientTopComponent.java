@@ -24,6 +24,7 @@ import com.lb.netbeans.rest.client.event.TableParamsListener;
 import com.lb.netbeans.rest.client.event.TokenDocumentListener;
 import com.lb.netbeans.rest.client.event.UrlDocumentListener;
 import com.lb.netbeans.rest.client.UserAgent;
+import com.lb.netbeans.rest.client.persistence.RestClientDataObject;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.core.MultivaluedMap;
@@ -65,6 +66,8 @@ import org.openide.windows.TopComponent;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.netbeans.spi.actions.AbstractSavable;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * Top component which displays something.
@@ -248,15 +251,32 @@ public class RestClientTopComponent extends TopComponent {
     }
 
     private void markAsUnmodified() {
-        if(modified) {
-            modified = false;
-            if (savable != null) {
-                content.remove(savable);
-                savable = null;
+    if (modified) {
+        modified = false;
+
+        /* Rimuove il savable dal lookup del TopComponent */
+        if (savable != null) {
+            content.remove(savable);
+            /* Lo deregistra anche dalla registrazione globale di NetBeans */
+            savable.deregister();          // <‑‑  qui
+            savable = null;
+        }
+
+        /* Aggiorna il flag del DataObject (se c’è un file associato) */
+        firePropertyChange(PROP_DIRTY, true, false);
+        try {
+            if (currentFile != null) {
+                DataObject dataObject = DataObject.find(currentFile);
+                if (dataObject != null) {
+                    dataObject.setModified(false);   // ← flag a false
+                }
             }
-            firePropertyChange(PROP_DIRTY, true, false);
+        } catch (Exception ex) {
+            Logger.getLogger(RestClientTopComponent.class.getName())
+                  .log(Level.WARNING, "Error updating data object modified state", ex);
         }
     }
+}
 
     private class RestClientSavable extends AbstractSavable {
         RestClientSavable() {
@@ -265,13 +285,19 @@ public class RestClientTopComponent extends TopComponent {
 
         @Override
         protected void handleSave() throws IOException {
-            saveToFile();
-            content.remove(this);
+            saveToFile();          // operazione di salvataggio reale
+            content.remove(this);  // rimuove dal lookup del TopComponent
+            deregister();          // rimuove dal lookup globale
         }
 
         @Override
         public boolean equals(Object obj) {
             return obj == this;
+        }
+        
+        /**  Metodo di comodità per chiamare AbstractSavable.unregister()  */
+        public void deregister() {
+            super.unregister();          // chiama il metodo protected della superclasse
         }
 
         @Override
@@ -330,7 +356,7 @@ public class RestClientTopComponent extends TopComponent {
             }
         } else if (res == NotifyDescriptor.NO_OPTION) {
             // Remove savable to ensure Save All is deactivated
-            markAsUnmodified();
+            markAsUnmodified();   // deregistra e resetta il flag
             return true; // Chiudi senza salvare
         }
         return false; // Annulla chiusura

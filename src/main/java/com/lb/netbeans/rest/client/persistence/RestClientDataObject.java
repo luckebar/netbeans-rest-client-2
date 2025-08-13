@@ -280,6 +280,10 @@ public class RestClientDataObject extends MultiDataObject {
         }
     }
     
+    public void clearModified() {
+        setModified(false);
+    }
+    
     public void readFile() {
         try {
             Lookup lookup = getCookieSet().getLookup();
