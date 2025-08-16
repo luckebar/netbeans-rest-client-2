@@ -48,12 +48,10 @@
 
 ## Getting Started
 
-1. Open the client: **Tools → REST Client**.  
-   _[screenshot: `docs/img/open-rest-client.png`]_
-2. Create or open a **`.rstopt`** configuration.  
+1. Create or open a **`.rstopt`** configuration.  
    _[screenshot: `docs/img/open-rstopt.png`]_
-3. Pick an **Environment** (optional), set **Method**, **URL**, **Headers**, and **Body**.
-4. Click **Send**.  
+2. Pick an **Environment** (optional), set **Method**, **URL**, **Headers**, and **Body**.
+3. Click **Send**.  
    _[screenshot: `docs/img/send-request.png`]_
 
 ---
