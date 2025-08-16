@@ -87,7 +87,7 @@ You can configure auth **per request** via the **Authentication** panel in the r
 ### Basic Authentication
 
 - Open **Authentication** → select **Basic**.  
-  Fields: **Username**, **Password** (supports `${ENV_VAR}` references).  
+  Fields: **Username**, **Password** (supports environments references).  
   _[screenshot: `docs/img/auth-basic.png`]_
 
 **What gets sent**
@@ -109,7 +109,7 @@ Authorization: Basic base64(username:password)
 Authorization: Bearer <token>
 ```
 
-> **Tip:** Store the token in an environment variable and reference it (`${ACCESS_TOKEN}`) so you can rotate it without editing multiple requests.
+> **Tip:** Store the token in an environment variable so you can rotate it without editing multiple requests.
 
 ---
 
@@ -121,12 +121,11 @@ Use for **machine-to-machine** scenarios.
   Fields:
   - **Token URL** (e.g., `https://auth.example.com/oauth2/token`)
   - **Client ID**
-  - **Client Secret** (recommend `${CLIENT_SECRET}`)
+  - **Client Secret**
   - **Scopes** (space-separated, optional)
   - **Audience/Resource** (optional, if your IdP requires it)
   Buttons:
   - **Get Token** — performs the `client_credentials` grant
-  - **Refresh** — requests a fresh token (if supported)
   - **Copy** / **Clear**
 
    ![screenshot](screenshotAuth1.png)
@@ -137,7 +136,7 @@ Authorization: Bearer <access_token>
 ```
 
 **Best practices**
-- Keep secrets in environments (`${CLIENT_SECRET}`).
+- Keep secrets in environments.
 - If your IdP needs additional parameters (e.g., `audience`), include them in the form if present or as advanced fields.
 
 ---
@@ -179,7 +178,7 @@ Use for **user-delegated** flows (interactive login).
 ### Token storage & security
 
 - Avoid committing secrets or tokens to version control.
-- Prefer environment variables (e.g., `${CLIENT_SECRET}`, `${ACCESS_TOKEN}`).
+- Prefer environment variables (e.g., CLIENT_SECRET, ACCESS_TOKEN).
 - Rotate tokens regularly; use **Refresh Token** when available.
 
 ---
@@ -199,12 +198,12 @@ ACCESS_TOKEN=eyJhbGciOi...
 
 **Manual Bearer header (env-driven)**
 ```
-Authorization: Bearer ${ACCESS_TOKEN}
+Authorization: Bearer ACCESS_TOKEN
 ```
 
 **URL with env var**
 ```
-GET ${BASE_URL}/v1/customers
+GET BASE_URL/v1/customers
 ```
 
 ---
