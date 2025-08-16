@@ -49,10 +49,9 @@
 ## Getting Started
 
 1. Create or open a **`.rstopt`** configuration.  
-   _[screenshot: `docs/img/open-rstopt.png`]_
 2. Pick an **Environment** (optional), set **Method**, **URL**, **Headers**, and **Body**.
 3. Click **Send**.  
-   _[screenshot: `docs/img/send-request.png`]_
+   ![screenshot](screenshot.png)
 
 ---
 
@@ -67,11 +66,11 @@
 
 Use environments to centralize variables like `BASE_URL`, `ACCESS_TOKEN`, `CLIENT_ID`, etc.
 
-- **Export environments to `.rstcli`:**  
+- **Export environments to `.rstopt`:**  
   **Tools → REST Client → Environments… → Export…** → choose one or more environments → **Save**  
   _[screenshot: `docs/img/env-export.png`]_
 
-- **Import environments from `.rstcli`:**  
+- **Import environments from `.rstopt`:**  
   **Tools → REST Client → Environments… → Import…** → pick a `.rstcli` → **Import**  
   _[screenshot: `docs/img/env-import.png`]_
 
@@ -101,9 +100,9 @@ Authorization: Basic base64(username:password)
 ### Bearer Token (Manual)
 
 - Open **Authentication** → select **Bearer (Manual)**.  
-  Field: **Access Token** (paste directly or use `${ACCESS_TOKEN}`).  
+  Field: **Access Token** (paste directly).  
   Optional: **Copy** / **Clear** buttons for convenience.  
-  _[screenshot: `docs/img/auth-bearer.png`]_
+   ![screenshot](screenshotAuth0.png)
 
 **What gets sent**
 ```
@@ -130,7 +129,7 @@ Use for **machine-to-machine** scenarios.
   - **Refresh** — requests a fresh token (if supported)
   - **Copy** / **Clear**
 
-_[screenshot: `docs/img/oauth-client-credentials.png`]_
+   ![screenshot](screenshotAuth1.png)
 
 **Result**
 ```
@@ -161,7 +160,7 @@ Use for **user-delegated** flows (interactive login).
   - **Refresh Token** — exchanges `refresh_token` for a new `access_token` (if available)
   - **Copy** / **Clear**
 
-_[screenshot: `docs/img/oauth-pkce.png`]_
+   ![screenshot](screenshotAuth2.png)
 
 **Flow**
 1. **Start Authorization** → browser opens → sign in and consent.
