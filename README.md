@@ -18,7 +18,7 @@
 - **Save & Reuse Configurations**  
   Store requests and environments in `.rstopt`.
 
-- **Import/Export Environments (New)**  
+- **Import/Export Environments**  
   Export one or more environment configurations to portable **`.rstcli`** files and import them back into your main **`.rstopt`**. Ideal for sharing environment setups across teams.
   - Export: **Tools → REST Client → Environments… → Export…**
   - Import: **Tools → REST Client → Environments… → Import…**
@@ -61,7 +61,7 @@
 ## File Types
 
 - **`.rstopt`** — Main workspace containing saved requests and environment definitions.
-- **`.rstcli`** — Portable environment file for **export/import** (new).
+- **`.rstcli`** — Portable environment file for **export/import**.
 
 ---
 
