@@ -251,32 +251,32 @@ public class RestClientTopComponent extends TopComponent {
     }
 
     private void markAsUnmodified() {
-    if (modified) {
-        modified = false;
+        if (modified) {
+            modified = false;
 
-        /* Rimuove il savable dal lookup del TopComponent */
-        if (savable != null) {
-            content.remove(savable);
-            /* Lo deregistra anche dalla registrazione globale di NetBeans */
-            savable.deregister();          // <‑‑  qui
-            savable = null;
-        }
-
-        /* Aggiorna il flag del DataObject (se c’è un file associato) */
-        firePropertyChange(PROP_DIRTY, true, false);
-        try {
-            if (currentFile != null) {
-                DataObject dataObject = DataObject.find(currentFile);
-                if (dataObject != null) {
-                    dataObject.setModified(false);   // ← flag a false
-                }
+            /* Rimuove il savable dal lookup del TopComponent */
+            if (savable != null) {
+                content.remove(savable);
+                /* Lo deregistra anche dalla registrazione globale di NetBeans */
+                savable.deregister();          // <‑‑  qui
+                savable = null;
             }
-        } catch (Exception ex) {
-            Logger.getLogger(RestClientTopComponent.class.getName())
-                  .log(Level.WARNING, "Error updating data object modified state", ex);
+
+            /* Aggiorna il flag del DataObject (se c’è un file associato) */
+            firePropertyChange(PROP_DIRTY, true, false);
+            try {
+                if (currentFile != null) {
+                    DataObject dataObject = DataObject.find(currentFile);
+                    if (dataObject != null) {
+                        dataObject.setModified(false);   // ← flag a false
+                    }
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(RestClientTopComponent.class.getName())
+                      .log(Level.WARNING, "Error updating data object modified state", ex);
+            }
         }
     }
-}
 
     private class RestClientSavable extends AbstractSavable {
         RestClientSavable() {

@@ -68,11 +68,12 @@ Use environments to centralize variables like `BASE_URL`, `ACCESS_TOKEN`, `CLIEN
 
 - **Export environments to `.rstopt`:**  
   **Tools → REST Client → Environments… → Export…** → choose one or more environments → **Save**  
-  _[screenshot: `docs/img/env-export.png`]_
+  ![screenshot](screenshotOpt1.png)
+  ![screenshot](screenshotOpt2.png)
 
 - **Import environments from `.rstopt`:**  
-  **Tools → REST Client → Environments… → Import…** → pick a `.rstcli` → **Import**  
-  _[screenshot: `docs/img/env-import.png`]_
+  **Tools → REST Client → Environments… → Import…** → pick a `.rstopt` → **Import**  
+  ![screenshot](screenshotOpt3.png)
 
 > **Tip:** Share `.rstcli` files without secrets; teammates can fill credentials locally.
 
@@ -88,7 +89,6 @@ You can configure auth **per request** via the **Authentication** panel in the r
 
 - Open **Authentication** → select **Basic**.  
   Fields: **Username**, **Password** (supports environments references).  
-  _[screenshot: `docs/img/auth-basic.png`]_
 
 **What gets sent**
 ```
