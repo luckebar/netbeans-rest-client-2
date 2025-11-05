@@ -292,10 +292,11 @@ public class RestClient {
         return mediaType;
     }
     
-    public String getClientCredentialsTokenOnlyBody(String tokenUrl, String clientId, 
+    public HashMap<String, String> getClientCredentialsTokenOnlyBody(String tokenUrl, String clientId, 
         String clientSecret, String scope) throws ProcessingException {
     
         WebTarget target = client.target(tokenUrl);
+        HashMap<String, String> availableTokens = new HashMap<>();
 
         MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
         formData.add("grant_type", "client_credentials");
@@ -305,20 +306,30 @@ public class RestClient {
 
         Response response = target.request()
                 .post(Entity.form(formData));
-
+        
         if(response.getStatus() == 200) {
             JsonObject json = response.readEntity(JsonObject.class);
-            return json.getString("access_token");
+
+            // Estrae tutti i token disponibili
+            if(json.containsKey("access_token")) {
+                availableTokens.put("Access Token", json.getString("access_token"));
+            }
+            if(json.containsKey("id_token")) {
+                availableTokens.put("ID Token", json.getString("id_token"));
+            }
+
+            return availableTokens;
         } else {
             throw new ProcessingException("Error getting token: " 
                     + response.getStatusInfo().getReasonPhrase());
         }
     }
     
-    public String getClientCredentialsTokenHeader(String tokenUrl, String clientId, 
+    public HashMap<String, String> getClientCredentialsTokenHeader(String tokenUrl, String clientId, 
         String clientSecret, String scope) throws ProcessingException {
 
         WebTarget target = client.target(tokenUrl);
+        HashMap<String, String> availableTokens = new HashMap<>();
 
         // Codifica le credenziali in Base64 per l'header Basic Auth
         String credentials = clientId + ":" + clientSecret;
@@ -334,7 +345,15 @@ public class RestClient {
 
         if(response.getStatus() == Response.Status.OK.getStatusCode()) {
             JsonObject json = response.readEntity(JsonObject.class);
-            return json.getString("access_token");
+            // Estrae tutti i token disponibili
+            if(json.containsKey("access_token")) {
+                availableTokens.put("Access Token", json.getString("access_token"));
+            }
+            if(json.containsKey("id_token")) {
+                availableTokens.put("ID Token", json.getString("id_token"));
+            }
+
+            return availableTokens;
         } else {
             throw new ProcessingException("Error getting token: " 
                     + response.getStatusInfo().getReasonPhrase());
@@ -395,7 +414,7 @@ public class RestClient {
                     }
 
                     // Ottieni il token
-                    String token = exchangeCodeForToken(
+                    HashMap<String, String> tokens = exchangeCodeForToken(
                         accessTokenUrl,
                         code,
                         codeVerifier,
@@ -403,7 +422,8 @@ public class RestClient {
                         callbackUrl
                     );
 
-                    authPanel.setToken(token);
+                    authPanel.setavAilableTokens(tokens);
+                    authPanel.updateTokenSelectionUI();
                     sendResponse(exchange, 200, "Authentication successful! You can close this window.");
 
                 } catch (Exception ex) {
@@ -418,9 +438,10 @@ public class RestClient {
         }
     }
     
-    public String exchangeCodeForToken(String tokenUrl, String code, String codeVerifier, 
+    public HashMap<String, String> exchangeCodeForToken(String tokenUrl, String code, String codeVerifier, 
                                   String clientId, String redirectUri) throws Exception {
         WebTarget target = client.target(tokenUrl);
+        HashMap<String, String> availableTokens = new HashMap<>();
         MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
         formData.add("grant_type", "authorization_code");
         formData.add("code", code);
@@ -433,7 +454,14 @@ public class RestClient {
 
         if(response.getStatus() == 200) {
             JsonObject json = response.readEntity(JsonObject.class);
-            return json.getString("access_token");
+            // Estrae tutti i token disponibili
+            if(json.containsKey("access_token")) {
+                availableTokens.put("Access Token", json.getString("access_token"));
+            }
+            if(json.containsKey("id_token")) {
+                availableTokens.put("ID Token", json.getString("id_token"));
+            }
+            return availableTokens;
         } else {
             throw new ProcessingException("Error getting token: " + 
                 response.getStatusInfo().getReasonPhrase());

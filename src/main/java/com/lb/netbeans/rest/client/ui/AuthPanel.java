@@ -28,6 +28,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
@@ -72,6 +73,7 @@ public class AuthPanel extends javax.swing.JPanel {
     private FileObject currentFile;
     private String environmentFilePath;
     private Map<String, EnvironmentConfig> environments;
+    private Map<String, String> availableTokens = new HashMap<>();
     private Logger logger = Logger.getLogger(AuthPanel.class.getName());
     /**
      * Creates new form AuthPanel
@@ -322,6 +324,14 @@ public class AuthPanel extends javax.swing.JPanel {
         tokenTextField.setText(token);
     }
     
+    public void setavAilableTokens(HashMap<String, String> availableTokens) {
+        this.availableTokens = availableTokens;
+    }
+    
+    public Map<String, String> getAilableTokens() {
+        return this.availableTokens;
+    }
+    
     public String getAuthUrl() {
         return authUrlTextField.getText();
     }
@@ -477,7 +487,34 @@ public class AuthPanel extends javax.swing.JPanel {
         }
     }
     
-    
+    public void updateTokenSelectionUI() {
+        tokenTypeComboBox.removeAllItems();
+        tokenTextField.setText("");
+        
+        if(availableTokens.size() > 1) {
+            tokenTypeLabel.setVisible(true);
+            tokenTypeComboBox.setVisible(true);
+
+            for(String tokenType : availableTokens.keySet()) {
+                tokenTypeComboBox.addItem(tokenType);
+            }
+            
+            if(availableTokens.containsKey("access_token"))
+                tokenTypeComboBox.setSelectedItem("access_token");
+            else
+                tokenTypeComboBox.setSelectedIndex(0);
+            
+            tokenTextField.setText(availableTokens.get(tokenTypeComboBox.getSelectedItem().toString()));
+        } else if(availableTokens.size() == 1) {
+            //tokenTypeLabel.setVisible(false);
+            //tokenTypeComboBox.setVisible(false);
+            tokenTextField.setText(availableTokens.values().iterator().next());
+        } else {
+            //tokenTypeLabel.setVisible(false);
+            //tokenTypeComboBox.setVisible(false);
+            tokenTextField.setText("");
+        }
+    }
     
 
     /**
@@ -517,6 +554,8 @@ public class AuthPanel extends javax.swing.JPanel {
         codeVerifierLabel = new javax.swing.JLabel();
         codeVerifierTextField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        tokenTypeLabel = new javax.swing.JLabel();
+        tokenTypeComboBox = new javax.swing.JComboBox<>();
         basicAuthPanel = new javax.swing.JPanel();
         usernameLabel = new javax.swing.JLabel();
         passwordLabel = new javax.swing.JLabel();
@@ -550,7 +589,7 @@ public class AuthPanel extends javax.swing.JPanel {
         );
         noAuthPanelLayout.setVerticalGroup(
             noAuthPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 467, Short.MAX_VALUE)
+            .addGap(0, 383, Short.MAX_VALUE)
         );
 
         authTypePanel.add(noAuthPanel, "No Auth");
@@ -598,40 +637,47 @@ public class AuthPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "* Auto generated, change only if necessary");
 
+        org.openide.awt.Mnemonics.setLocalizedText(tokenTypeLabel, "Use Token Type");
+
+        tokenTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tokenTypeComboBoxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout bearerTokenPanelLayout = new javax.swing.GroupLayout(bearerTokenPanel);
         bearerTokenPanel.setLayout(bearerTokenPanelLayout);
         bearerTokenPanelLayout.setHorizontalGroup(
             bearerTokenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(bearerTokenPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(bearerTokenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(bearerTokenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, bearerTokenPanelLayout.createSequentialGroup()
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 308, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(getNewAccessTokenButton))
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, bearerTokenPanelLayout.createSequentialGroup()
-                            .addGroup(bearerTokenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(authenticationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(scopeLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(clientSecretLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(clientIdLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(accessTokenUrlLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
-                                .addComponent(tokenLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(grantTypeLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGap(18, 18, 18)
-                            .addGroup(bearerTokenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(grantTypeComboBox, 0, 400, Short.MAX_VALUE)
-                                .addComponent(accessTokenUrlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                                .addComponent(clientIdTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                                .addComponent(clientSecretTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                                .addComponent(scopeTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                                .addComponent(tokenTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                                .addComponent(authenticationSendModeComboBox, 0, 400, Short.MAX_VALUE)))
-                        .addGroup(bearerTokenPanelLayout.createSequentialGroup()
-                            .addComponent(callbackUrlLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(18, 18, 18)
-                            .addComponent(callbackUrlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)))
+                .addGroup(bearerTokenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, bearerTokenPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 308, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(getNewAccessTokenButton))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, bearerTokenPanelLayout.createSequentialGroup()
+                        .addGroup(bearerTokenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(authenticationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(scopeLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(clientSecretLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(clientIdLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(accessTokenUrlLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+                            .addComponent(tokenLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(grantTypeLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
+                        .addGroup(bearerTokenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(grantTypeComboBox, 0, 400, Short.MAX_VALUE)
+                            .addComponent(accessTokenUrlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                            .addComponent(clientIdTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                            .addComponent(clientSecretTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                            .addComponent(scopeTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                            .addComponent(tokenTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                            .addComponent(authenticationSendModeComboBox, 0, 400, Short.MAX_VALUE)))
+                    .addGroup(bearerTokenPanelLayout.createSequentialGroup()
+                        .addComponent(callbackUrlLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(callbackUrlTextField))
                     .addGroup(bearerTokenPanelLayout.createSequentialGroup()
                         .addComponent(authUrlLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
@@ -643,13 +689,21 @@ public class AuthPanel extends javax.swing.JPanel {
                         .addGap(18, 18, 18)
                         .addGroup(bearerTokenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(codeVerifierTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(codeChallengeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(codeChallengeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(bearerTokenPanelLayout.createSequentialGroup()
+                        .addComponent(tokenTypeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(tokenTypeComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap(42, Short.MAX_VALUE))
         );
         bearerTokenPanelLayout.setVerticalGroup(
             bearerTokenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(bearerTokenPanelLayout.createSequentialGroup()
-                .addGap(29, 29, 29)
+                .addGap(4, 4, 4)
+                .addGroup(bearerTokenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tokenTypeLabel)
+                    .addComponent(tokenTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(bearerTokenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tokenLabel)
                     .addComponent(tokenTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -744,7 +798,7 @@ public class AuthPanel extends javax.swing.JPanel {
                 .addGroup(basicAuthPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(salvaPasswordLabel)
                     .addComponent(salvaPassword))
-                .addContainerGap(356, Short.MAX_VALUE))
+                .addContainerGap(272, Short.MAX_VALUE))
         );
 
         authTypePanel.add(basicAuthPanel, "Basic Auth");
@@ -867,15 +921,19 @@ public class AuthPanel extends javax.swing.JPanel {
 
             try {
                 String token = null;
-                if(authenticationSendModeComboBox.getSelectedIndex() == 0)
-                    token = client.getClientCredentialsTokenHeader(tokenUrl, clientId, clientSecret, scope);
-                else if(authenticationSendModeComboBox.getSelectedIndex() == 1)
-                    token = client.getClientCredentialsTokenOnlyBody(tokenUrl, clientId, clientSecret, scope);
+                availableTokens.clear();
                 
-                if(token != null)
-                    tokenTextField.setText(token);
-                else
+                if(authenticationSendModeComboBox.getSelectedIndex() == 0)
+                    availableTokens = client.getClientCredentialsTokenHeader(tokenUrl, clientId, clientSecret, scope);
+                else if(authenticationSendModeComboBox.getSelectedIndex() == 1)
+                    availableTokens = client.getClientCredentialsTokenOnlyBody(tokenUrl, clientId, clientSecret, scope);
+                
+                if(!availableTokens.isEmpty()) {
+                    updateTokenSelectionUI();
+                }
+                else {
                     throw new ProcessingException("Mode Authentication not supported");
+                }
             } catch (ProcessingException ex) {
                 JOptionPane.showMessageDialog(this, 
                     "Errore durante il recupero del token: " + ex.getMessage(),
@@ -980,6 +1038,14 @@ public class AuthPanel extends javax.swing.JPanel {
         loadSelectedEnvironment();
     }//GEN-LAST:event_environmentComboBoxActionPerformed
 
+    private void tokenTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tokenTypeComboBoxActionPerformed
+        // TODO add your handling code here:
+        if(tokenTypeComboBox.getSelectedItem() != null && !availableTokens.isEmpty()) {
+            String selectedTokenType = tokenTypeComboBox.getSelectedItem().toString();
+            tokenTextField.setText(availableTokens.get(selectedTokenType));
+        }
+    }//GEN-LAST:event_tokenTypeComboBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel accessTokenUrlLabel;
@@ -1019,6 +1085,8 @@ public class AuthPanel extends javax.swing.JPanel {
     private javax.swing.JTextField scopeTextField;
     private javax.swing.JLabel tokenLabel;
     private javax.swing.JTextField tokenTextField;
+    private javax.swing.JComboBox<String> tokenTypeComboBox;
+    private javax.swing.JLabel tokenTypeLabel;
     private javax.swing.JLabel usernameLabel;
     private javax.swing.JTextField usernameTextField;
     // End of variables declaration//GEN-END:variables
