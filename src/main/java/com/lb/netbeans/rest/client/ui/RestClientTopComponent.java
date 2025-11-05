@@ -111,6 +111,8 @@ public class RestClientTopComponent extends TopComponent {
     public static final String BODY_PROPERTY = "body";
     public static final String PARAMS_PROPERTY = "params";
     
+    public static final String TOKEN_TYPE = "token_type";
+    
     public static final String TOKEN_CC_PROPERTY = "token_cc";
     public static final String GRANT_TYPE_PROPERTY = "grant_type";
     public static final String ACCESS_TOKEN_URL_PROPERTY = "access_token_url";
@@ -648,6 +650,8 @@ public class RestClientTopComponent extends TopComponent {
         p.setProperty(HEADERS_PROPERTY, headersPanel.getValuesString());
         p.setProperty(BODY_TYPE_PROPERTY, bodyPanel.getBodyType());
         p.setProperty(BODY_PROPERTY, bodyPanel.getBody() != null ? bodyPanel.getBody() : "");
+        
+        p.setProperty("tokenType", authPanel.getTokenType());
 
         if (authPanel.isSavable()) {
             p.setProperty(PASSWORD_PROPERTY, authPanel.getPassword());
@@ -715,6 +719,11 @@ public class RestClientTopComponent extends TopComponent {
         String body = p.getProperty(BODY_PROPERTY);
         if (body != null && !body.isEmpty()) {
             bodyPanel.setBody(body);
+        }
+        
+        String tokenType = p.getProperty("tokenType");
+        if (tokenType != null && !tokenType.isEmpty()) {
+            authPanel.setSelectedTokenType(tokenType);
         }
         
         String savePassword = p.getProperty(PASSWORD_SAVE_PROPERTY);

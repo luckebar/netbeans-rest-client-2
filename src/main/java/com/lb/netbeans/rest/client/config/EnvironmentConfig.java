@@ -27,6 +27,7 @@ public class EnvironmentConfig {
     private String username;
     private String password;
     private boolean passwordSave;
+    private String tokenType;
     private String token;
     private String grantType;
     private String callbackUrl;
@@ -45,7 +46,7 @@ public class EnvironmentConfig {
     
     // Costruttore completo
     public EnvironmentConfig(String environmentName, String authType, String username, String password, 
-                            boolean passwordSave, String token, String authUrl, String callbackUrl, 
+                            boolean passwordSave,String tokenType, String token, String authUrl, String callbackUrl, 
                             String codeVerifier, String codeChallenge, String grantType, 
                             String accessTokenUrl, String clientId, String clientSecret, String scope, 
                             String authenticationMode, String baseHost) {
@@ -54,6 +55,7 @@ public class EnvironmentConfig {
         this.username = username;
         this.password = password;
         this.passwordSave = passwordSave;
+        this.tokenType = tokenType;
         this.token = token;
         this.authUrl = authUrl;
         this.callbackUrl = callbackUrl;
@@ -83,6 +85,9 @@ public class EnvironmentConfig {
     
     public boolean isPasswordSave() { return passwordSave; }
     public void setPasswordSave(boolean passwordSave) { this.passwordSave = passwordSave; }
+    
+    public String getTokenType() { return tokenType; }
+    public void setTokenType(String tokenType) { this.tokenType = tokenType; }
     
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }

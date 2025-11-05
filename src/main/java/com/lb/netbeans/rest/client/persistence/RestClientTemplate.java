@@ -66,6 +66,7 @@ public final class RestClientTemplate  extends CreateFromTemplateHandler {
             p.setProperty(RestClientTopComponent.HEADERS_PROPERTY, "");
             p.setProperty(RestClientTopComponent.BODY_TYPE_PROPERTY, "None");
             p.setProperty(RestClientTopComponent.BODY_PROPERTY, "");
+            p.setProperty(RestClientTopComponent.TOKEN_TYPE, "");
             p.store(out, "Rest Client Configuration");
         }
         

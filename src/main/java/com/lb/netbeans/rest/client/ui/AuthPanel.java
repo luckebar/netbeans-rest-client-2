@@ -39,6 +39,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import java.util.logging.Logger;
+import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
 
 
@@ -218,6 +219,8 @@ public class AuthPanel extends javax.swing.JPanel {
         config.setUsername(usernameTextField.getText());
         config.setPassword(new String(passwordField.getPassword()));
         config.setPasswordSave(salvaPassword.isSelected());
+        if(tokenTypeComboBox.getSelectedItem() != null)
+            config.setTokenType(tokenTypeComboBox.getSelectedItem().toString());
         config.setToken(tokenTextField.getText());
         config.setAuthUrl(authUrlTextField.getText());
         config.setCallbackUrl(callbackUrlTextField.getText());
@@ -251,6 +254,9 @@ public class AuthPanel extends javax.swing.JPanel {
         usernameTextField.setText(config.getUsername());
         passwordField.setText(config.getPassword());
         salvaPassword.setSelected(config.isPasswordSave());
+        
+        if(config.getTokenType() != null)
+            tokenTypeComboBox.setSelectedItem(config.getTokenType());
         tokenTextField.setText(config.getToken());
         authUrlTextField.setText(config.getAuthUrl());
         callbackUrlTextField.setText(config.getCallbackUrl());
@@ -330,6 +336,23 @@ public class AuthPanel extends javax.swing.JPanel {
     
     public Map<String, String> getAilableTokens() {
         return this.availableTokens;
+    }
+    
+    public void setSelectedTokenType(String tokenType) {
+        tokenTypeComboBox.setSelectedItem(tokenType);
+    }
+
+    public String getSelectedTokenType() {
+        return tokenTypeComboBox.getSelectedItem().toString();
+    }
+    
+    public String getTokenType() {
+        return tokenTypeComboBox.getSelectedItem() != null ? 
+            tokenTypeComboBox.getSelectedItem().toString() : "";
+    }
+    
+    public JComboBox<String> getTokenTypeComboBox() {
+        return tokenTypeComboBox;
     }
     
     public String getAuthUrl() {
@@ -488,6 +511,12 @@ public class AuthPanel extends javax.swing.JPanel {
     }
     
     public void updateTokenSelectionUI() {
+        String selected = "access_token";
+        
+        if(tokenTypeComboBox.getItemCount() > 0 && tokenTypeComboBox.getSelectedItem() != null) {
+            selected = tokenTypeComboBox.getSelectedItem().toString();
+        }
+        
         tokenTypeComboBox.removeAllItems();
         tokenTextField.setText("");
         
@@ -499,7 +528,9 @@ public class AuthPanel extends javax.swing.JPanel {
                 tokenTypeComboBox.addItem(tokenType);
             }
             
-            if(availableTokens.containsKey("access_token"))
+            if(availableTokens.containsKey(selected))
+                tokenTypeComboBox.setSelectedItem(selected);
+            else if(availableTokens.containsKey("access_token"))
                 tokenTypeComboBox.setSelectedItem("access_token");
             else
                 tokenTypeComboBox.setSelectedIndex(0);
@@ -1090,4 +1121,5 @@ public class AuthPanel extends javax.swing.JPanel {
     private javax.swing.JLabel usernameLabel;
     private javax.swing.JTextField usernameTextField;
     // End of variables declaration//GEN-END:variables
+
 }
