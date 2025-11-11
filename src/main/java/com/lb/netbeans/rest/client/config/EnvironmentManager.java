@@ -187,6 +187,7 @@ public class EnvironmentManager {
         config.setPassword(obj.getString("password", ""));
         config.setPasswordSave(obj.getBoolean("passwordSave", false));
         config.setToken(obj.getString("token", ""));
+        config.setTokenType(obj.getString("tokenType", ""));
         config.setAuthUrl(obj.getString("authUrl", ""));
         config.setCallbackUrl(obj.getString("callbackUrl", ""));
         config.setCodeVerifier(obj.getString("codeVerifier", ""));

@@ -219,8 +219,7 @@ public class AuthPanel extends javax.swing.JPanel {
         config.setUsername(usernameTextField.getText());
         config.setPassword(new String(passwordField.getPassword()));
         config.setPasswordSave(salvaPassword.isSelected());
-        if(tokenTypeComboBox.getSelectedItem() != null)
-            config.setTokenType(tokenTypeComboBox.getSelectedItem().toString());
+        config.setTokenType((tokenTypeComboBox.getSelectedItem() != null)?tokenTypeComboBox.getSelectedItem().toString():"");
         config.setToken(tokenTextField.getText());
         config.setAuthUrl(authUrlTextField.getText());
         config.setCallbackUrl(callbackUrlTextField.getText());
@@ -1006,6 +1005,7 @@ public class AuthPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
         enableDisableGetNewAccessTokenButton();
         boolean isPKCE = grantTypeComboBox.getSelectedItem().equals("PKCE");
+        boolean isManual = grantTypeComboBox.getSelectedItem().equals("Manual");
         authUrlLabel.setVisible(isPKCE);
         authUrlTextField.setVisible(isPKCE);
         callbackUrlLabel.setVisible(isPKCE);
@@ -1015,8 +1015,9 @@ public class AuthPanel extends javax.swing.JPanel {
         codeChallengeLabel.setVisible(isPKCE);
         codeChallengeTextField.setVisible(isPKCE);
         //generateCodeVerifierButton.setVisible(isPKCE); // TODO lo chiamo in automatico quando voglio riprendermi il token
-        clientSecretLabel.setVisible(!isPKCE);
-        clientSecretTextField.setVisible(!isPKCE);
+        clientSecretLabel.setVisible(!isPKCE && !isManual);
+        clientSecretTextField.setVisible(!isPKCE && !isManual);
+        
     }//GEN-LAST:event_grantTypeComboBoxActionPerformed
 
     private void addEnvironmentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addEnvironmentButtonActionPerformed
